@@ -24,12 +24,12 @@ jobs:
 
       - name: Smoke test
         run: |
-          ./build/arrpc --version
-          ./build/arrpc --detect-path "/Applications/Brawlhalla.app/Contents/MacOS/Brawlhalla"
-          ./build/arrpc --scan-once
+          ./build/arrpcf --version
+          ./build/arrpcf --detect-path "/Applications/Brawlhalla.app/Contents/MacOS/Brawlhalla"
+          ./build/arrpcf --scan-once
 
       - name: Protocol tests
-        run: python3 tools/test_server.py build/arrpc
+        run: python3 tools/test_server.py build/arrpcf
 
   docs:
     name: Documentation
@@ -47,4 +47,4 @@ jobs:
           jekyll build --source docs --destination _site
 
       - name: Check links and anchors
-        run: python3 tools/check_links.py _site /arrpc
+        run: python3 tools/check_links.py _site /arrpcf

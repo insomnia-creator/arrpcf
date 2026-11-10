@@ -9,10 +9,10 @@ permalink: /testing/
 ```sh
 make test
 # or
-python3 tools/test_server.py build/arrpc
+python3 tools/test_server.py build/arrpcf
 ```
 
-73 checks, Python standard library only, no fixtures. The suite boots the real binary
+76 checks, Python standard library only, no fixtures. The suite boots the real binary
 on private ports and socket paths in a temporary directory, then drives it with raw
 IPC packets and hand-written WebSocket frames.
 
@@ -29,9 +29,10 @@ IPC packets and hand-written WebSocket frames.
 | Bridge | broadcast, catch-up for a client connecting late |
 | Probing | an occupied IPC socket is skipped, handshake works on `-1`, `--ipc-socket` refuses an active socket |
 | Options | exact socket path, `--allow-origin`, occupied WebSocket port fall-through |
+| Environment | `ARRPC_BRIDGE_PORT` alias still works, `ARRPCF_BRIDGE_PORT` wins when both are set |
 | Shutdown | IPC socket file is unlinked |
 
-Each run ends with `73 passed, 0 failed`.
+Each run ends with `76 passed, 0 failed`.
 
 ## Sanitizers
 
@@ -49,7 +50,7 @@ moved RSS by about 0.4 MB — allocator arenas, not per-message growth.
 ```sh
 git clone https://github.com/OpenAsar/arrpc /tmp/arrpc-ref
 (cd /tmp/arrpc-ref && npm install)
-python3 tools/compare_upstream.py /tmp/arrpc-ref build/arrpc    # PARITY OK
+python3 tools/compare_upstream.py /tmp/arrpc-ref build/arrpcf    # PARITY OK
 ```
 
 The tool starts both servers on private ports and different `TMPDIR`s, performs the
@@ -88,11 +89,11 @@ subsequent `activity: null` — exactly what the bridge mods expect.
 ## Manual checks worth knowing
 
 ```sh
-arrpc --scan-once                                   # what game detection sees
-arrpc --detect-path "/Applications/Brawlhalla.app/Contents/MacOS/Brawlhalla"
-arrpc --debug                                       # frames, handshakes, probes
-ARRPC_FAKE_PROCESSES="/Applications/Brawlhalla.app/Contents/MacOS/Brawlhalla|4242" \
-  arrpc --scan-once                                 # detection without the game
+arrpcf --scan-once                                   # what game detection sees
+arrpcf --detect-path "/Applications/Brawlhalla.app/Contents/MacOS/Brawlhalla"
+arrpcf --debug                                       # frames, handshakes, probes
+ARRPCF_FAKE_PROCESSES="/Applications/Brawlhalla.app/Contents/MacOS/Brawlhalla|4242" \
+  arrpcf --scan-once                                 # detection without the game
 ```
 
 ## Continuous integration

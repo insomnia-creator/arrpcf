@@ -1,12 +1,12 @@
 ---
 title: How it works
-description: Components, startup order and data flow inside arrpc.
+description: Components, startup order and data flow inside arrpcf.
 permalink: /how-it-works/
 ---
 
 ## Components
 
-arrpc is one process with one thread and one `poll()` loop. Each transport is an
+arrpcf is one process with one thread and one `poll()` loop. Each transport is an
 object that owns a listening socket, a set of connections, and three callbacks
 (`connect`, `message`, `close`) that the protocol layer subscribes to.
 
@@ -87,7 +87,7 @@ tab opened after a game started still shows the game.
 
 ## Flow 4 — an RPC client disconnects
 
-On close, arrpc publishes `{activity: null, pid: <last pid>, socketId: <id>}` so the
+On close, arrpcf publishes `{activity: null, pid: <last pid>, socketId: <id>}` so the
 web client clears the card instead of showing a ghost. Connections that were rejected
 before they got a socket id (bad origin, unsupported version, bad handshake) never
 publish anything.

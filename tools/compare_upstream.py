@@ -6,7 +6,7 @@ publishes on its bridge.
 Usage:
     git clone https://github.com/OpenAsar/arrpc /tmp/arrpc-ref
     (cd /tmp/arrpc-ref && npm install)
-    tools/compare_upstream.py /tmp/arrpc-ref [build/arrpc]
+    tools/compare_upstream.py /tmp/arrpc-ref [build/arrpcf]
 
 Exits 0 when the bridge payloads, the READY packet and every SET_ACTIVITY
 response are identical. The three commands arRPC never answers
@@ -28,8 +28,8 @@ import tempfile
 import time
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-UPSTREAM = sys.argv[1] if len(sys.argv) > 1 else os.environ.get("ARRPC_UPSTREAM", "/tmp/arrpc-ref")
-BINARY = sys.argv[2] if len(sys.argv) > 2 else os.path.join(ROOT, "build", "arrpc")
+UPSTREAM = sys.argv[1] if len(sys.argv) > 1 else os.environ.get("ARRPCF_UPSTREAM", os.environ.get("ARRPC_UPSTREAM", "/tmp/arrpc-ref"))
+BINARY = sys.argv[2] if len(sys.argv) > 2 else os.path.join(ROOT, "build", "arrpcf")
 
 SESSION = [
     {"cmd": "SET_ACTIVITY", "nonce": "n1", "args": {"pid": 4242, "activity": {
@@ -137,9 +137,13 @@ def run(kind: str, command: list[str], cwd: str, workdir: str):
     os.makedirs(tmpdir, exist_ok=True)
     log_path = os.path.join(workdir, kind + ".log")
 
-    env = dict(os.environ, TMPDIR=tmpdir, ARRPC_BRIDGE_PORT=str(port))
-    env.pop("ARRPC_FAKE_PROCESSES", None)
-    env.pop("ARRPC_FAKE_PROCESSES_FILE", None)
+    # Upstream Node arRPC only reads ARRPC_BRIDGE_PORT; set both prefixes so the
+    # same session can be replayed against either implementation.
+    env = dict(os.environ, TMPDIR=tmpdir,
+               ARRPC_BRIDGE_PORT=str(port), ARRPCF_BRIDGE_PORT=str(port))
+    for name in ("ARRPC_FAKE_PROCESSES", "ARRPC_FAKE_PROCESSES_FILE",
+                 "ARRPCF_FAKE_PROCESSES", "ARRPCF_FAKE_PROCESSES_FILE"):
+        env.pop(name, None)
 
     with open(log_path, "w") as log:
         proc = subprocess.Popen(command, env=env, cwd=cwd, stdout=log, stderr=subprocess.STDOUT)
@@ -216,7 +220,7 @@ def main() -> int:
         print(f"binary not found: {BINARY}", file=sys.stderr)
         return 2
 
-    workdir = tempfile.mkdtemp(prefix="arrpc-compare-")
+    workdir = tempfile.mkdtemp(prefix="arrpcf-compare-")
     failures = 0
     try:
         ours = run("cpp", [BINARY, "--no-process-scanning", "--no-color"], ROOT, workdir)

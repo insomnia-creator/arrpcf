@@ -1,12 +1,12 @@
-title: arrpc
+title: arrpcf
 tagline: Native Discord local RPC servers for macOS
 description: >-
   A small C++ reimplementation of arRPC for macOS. Speaks Discord's local RPC
   protocols and republishes activity on the arRPC bridge WebSocket used by
   Discord web, Vencord, ArmCord and Vesktop.
 url: https://insomnia-creator.github.io
-baseurl: /arrpc
-repository: insomnia-creator/arrpc
+baseurl: /arrpcf
+repository: insomnia-creator/arrpcf
 
 markdown: kramdown
 kramdown:

@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.16)
-project(arrpc LANGUAGES C CXX)
+project(arrpcf LANGUAGES C CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -14,7 +14,7 @@ add_library(yyjson STATIC vendor/yyjson.c)
 target_include_directories(yyjson PUBLIC vendor)
 target_compile_options(yyjson PRIVATE -Os)
 
-add_executable(arrpc
+add_executable(arrpcf
   src/main.cpp
   src/config.cpp
   src/log.cpp
@@ -30,16 +30,16 @@ add_executable(arrpc
   src/util.cpp
 )
 
-target_include_directories(arrpc PRIVATE vendor src)
-target_compile_options(arrpc PRIVATE -Os -Wall -Wextra -Wpedantic)
-target_link_libraries(arrpc PRIVATE yyjson)
+target_include_directories(arrpcf PRIVATE vendor src)
+target_compile_options(arrpcf PRIVATE -Os -Wall -Wextra -Wpedantic)
+target_link_libraries(arrpcf PRIVATE yyjson)
 
 if(APPLE)
   find_library(PROC_LIBRARY proc)
   if(PROC_LIBRARY)
-    target_link_libraries(arrpc PRIVATE ${PROC_LIBRARY})
+    target_link_libraries(arrpcf PRIVATE ${PROC_LIBRARY})
   endif()
-  set_target_properties(arrpc PROPERTIES LINK_FLAGS "-Wl,-dead_strip,-x")
+  set_target_properties(arrpcf PROPERTIES LINK_FLAGS "-Wl,-dead_strip,-x")
 endif()
 
-install(TARGETS arrpc RUNTIME DESTINATION bin)
+install(TARGETS arrpcf RUNTIME DESTINATION bin)

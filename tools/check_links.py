@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Check links and anchors in a built Jekyll site.
 
-Usage: tools/check_links.py [_site] [/arrpc]
+Usage: tools/check_links.py [_site] [/arrpcf]
 
 Catches the usual publishing mistakes: links that ignore the baseurl, links to
 pages that were not generated, dead anchors, and unrendered Liquid tags.
@@ -41,7 +41,7 @@ def resolve(site: str, page: str, path: str) -> str:
 
 def main(argv: list[str]) -> int:
     site = argv[1] if len(argv) > 1 else "_site"
-    baseurl = (argv[2] if len(argv) > 2 else "/arrpc").rstrip("/")
+    baseurl = (argv[2] if len(argv) > 2 else "/arrpcf").rstrip("/")
 
     if not os.path.isdir(site):
         print(f"no built site at {site}", file=sys.stderr)

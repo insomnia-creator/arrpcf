@@ -1,20 +1,20 @@
 ---
 title: arRPC parity
-description: What arrpc matches from arRPC v3.7.0, and the handful of deliberate differences.
+description: What arrpcf matches from arRPC v3.7.0, and the handful of deliberate differences.
 permalink: /parity/
 ---
 
 ## Compatibility target
 
-arrpc implements the protocols and behaviour of
+arrpcf implements the protocols and behaviour of
 [arRPC v3.7.0](https://github.com/OpenAsar/arrpc). The bridge protocol is unchanged,
-so every consumer that works with arRPC works with arrpc — the Vencord
+so every consumer that works with arRPC works with arrpcf — the Vencord
 `WebRichPresence (arRPC)` plugin, `examples/bridge_mod.js`, and the integrations in
 ArmCord and Vesktop.
 
 ## What is implemented
 
-| Area | arRPC | arrpc |
+| Area | arRPC | arrpcf |
 | --- | --- | --- |
 | IPC transport (unix socket) | yes | yes — same framing, same probing, same close codes |
 | IPC socket index probing `-0…-9` | yes | yes — one-second `PING` probe per index |
@@ -31,11 +31,11 @@ ArmCord and Vesktop.
 | `DEEP_LINK` | emitted, never answered | always answered |
 | Process scanning | Windows + Linux | macOS (`libproc`) |
 | Detectable database | full 11.6 MB file | embedded 7.3 KB darwin subset, `--detectable` for the full file |
-| Env variables | `ARRPC_BRIDGE_PORT`, `ARRPC_NO_PROCESS_SCANNING`, `ARRPC_DEBUG` | same names |
+| Env variables | `ARRPC_BRIDGE_PORT`, `ARRPC_NO_PROCESS_SCANNING`, `ARRPC_DEBUG` | same names, plus `ARRPCF_*` equivalents that take precedence |
 
 ## Intentional differences
 
-| arRPC | arrpc | Why |
+| arRPC | arrpcf | Why |
 | --- | --- | --- |
 | Bridge binds `0.0.0.0` | `127.0.0.1` by default (`--bridge-host 0.0.0.0` restores it) | bridge messages contain your activity; it should not be reachable from the LAN |
 | Invites, guild templates and deep links are emitted to a callback with no listener, so the client never gets a reply | always answered; `--open-links` also opens the target | avoids RPC libraries hanging on those calls |
@@ -51,7 +51,7 @@ ArmCord and Vesktop.
 ## How the parity was verified
 
 `tools/compare_upstream.py` runs one identical RPC session against the original Node
-arRPC and against arrpc, then compares:
+arRPC and against arrpcf, then compares:
 
 - the `READY` packet,
 - the response to every command in the session,
@@ -61,7 +61,7 @@ arRPC and against arrpc, then compares:
 ```sh
 git clone https://github.com/OpenAsar/arrpc /tmp/arrpc-ref
 (cd /tmp/arrpc-ref && npm install)
-python3 tools/compare_upstream.py /tmp/arrpc-ref build/arrpc
+python3 tools/compare_upstream.py /tmp/arrpc-ref build/arrpcf
 ```
 
 Result against arRPC v3.7.0:
@@ -74,7 +74,7 @@ Result against arRPC v3.7.0:
 | `SET_ACTIVITY` (`activity: null`) | identical |
 | `CONNECTIONS_CALLBACK` | identical |
 | unknown command | identical (no reply) |
-| `INVITE_BROWSER` / `GUILD_TEMPLATE_BROWSER` / `DEEP_LINK` | intentional difference: arRPC is silent, arrpc answers |
+| `INVITE_BROWSER` / `GUILD_TEMPLATE_BROWSER` / `DEEP_LINK` | intentional difference: arRPC is silent, arrpcf answers |
 | bridge messages, including the disconnect clear | identical |
 
 ```

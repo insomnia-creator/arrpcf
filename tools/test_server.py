@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""End-to-end protocol tests for arrpc (stdlib only, no dependencies).
+"""End-to-end protocol tests for arrpcf (stdlib only, no dependencies).
 
-Usage: tools/test_server.py [path/to/arrpc]
+Usage: tools/test_server.py [path/to/arrpcf]
 
 Covers: IPC framing + handshake, READY packet, SET_ACTIVITY translation
 (buttons, timestamps, pid), activity clearing, socket close, socket probing,
@@ -24,7 +24,7 @@ import tempfile
 import time
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-BINARY = sys.argv[1] if len(sys.argv) > 1 else os.path.join(ROOT, "build", "arrpc")
+BINARY = sys.argv[1] if len(sys.argv) > 1 else os.path.join(ROOT, "build", "arrpcf")
 
 PASS = 0
 FAIL = 0
@@ -199,14 +199,14 @@ class Server:
         self.bridge_port = free_port()
         self.ws_first = free_port()
         self.ws_last = self.ws_first + 4
-        self.log_path = os.path.join(base_dir, "arrpc.log")
+        self.log_path = os.path.join(base_dir, "arrpcf.log")
         self.log = open(self.log_path, "w")
 
         env = dict(os.environ)
-        env.pop("ARRPC_FAKE_PROCESSES", None)
-        env.pop("ARRPC_FAKE_PROCESSES_FILE", None)
+        env.pop("ARRPCF_FAKE_PROCESSES", None)
+        env.pop("ARRPCF_FAKE_PROCESSES_FILE", None)
         if fake_processes is not None:
-            env["ARRPC_FAKE_PROCESSES_FILE"] = self.fake_file
+            env["ARRPCF_FAKE_PROCESSES_FILE"] = self.fake_file
 
         self.proc = subprocess.Popen(
             [
@@ -649,6 +649,73 @@ def find_app_id(name: str) -> str | None:
     return match.group(1) if match else None
 
 
+def wait_port(port: int, timeout: float = 8.0) -> bool:
+    deadline = time.time() + timeout
+    while time.time() < deadline:
+        try:
+            socket.create_connection(("127.0.0.1", port), timeout=0.2).close()
+            return True
+        except OSError:
+            time.sleep(0.05)
+    return False
+
+
+def test_env_aliases(base_dir: str) -> None:
+    print("environment variable aliases")
+
+    def start(name: str, env_extra: dict[str, str], ipc_path: str):
+        ws_base = 33000 + (os.getpid() + len(name)) % 5000
+        log = open(os.path.join(base_dir, name + ".log"), "w")
+        env = {k: v for k, v in os.environ.items()
+               if not k.startswith(("ARRPC_", "ARRPCF_"))}
+        env.update(env_extra)
+        proc = subprocess.Popen(
+            [BINARY, "--ipc-socket", ipc_path, "--ws-ports", f"{ws_base}-{ws_base + 2}",
+             "--no-process-scanning", "--no-color"],
+            stdout=log, stderr=subprocess.STDOUT, env=env)
+        return proc, log
+
+    # arRPC's original names still work.
+    legacy_port = free_port()
+    ipc_a = os.path.join(base_dir, "aliases-a.sock")
+    proc, log = start("legacy", {"ARRPC_BRIDGE_PORT": str(legacy_port)}, ipc_a)
+    try:
+        check("ARRPC_BRIDGE_PORT alias is honoured", wait_port(legacy_port))
+        client = IPCClient(ipc_a)
+        client.handshake("legacy-env")
+        _, ready = client.recv()
+        check("server started from alias env serves RPC", ready.get("evt") == "READY",
+              str(ready)[:100])
+        client.close()
+    finally:
+        proc.terminate()
+        try:
+            proc.wait(timeout=5)
+        except subprocess.TimeoutExpired:
+            proc.kill()
+        log.close()
+
+    # ...but the ARRPCF_ name wins when both are present.
+    primary_port = free_port()
+    legacy_port2 = free_port()
+    while legacy_port2 == primary_port:
+        legacy_port2 = free_port()
+    ipc_b = os.path.join(base_dir, "aliases-b.sock")
+    proc, log = start("precedence", {"ARRPCF_BRIDGE_PORT": str(primary_port),
+                                     "ARRPC_BRIDGE_PORT": str(legacy_port2)}, ipc_b)
+    try:
+        check("ARRPCF_BRIDGE_PORT takes precedence",
+              wait_port(primary_port) and not wait_port(legacy_port2, 0.6),
+              f"primary={primary_port} legacy={legacy_port2}")
+    finally:
+        proc.terminate()
+        try:
+            proc.wait(timeout=5)
+        except subprocess.TimeoutExpired:
+            proc.kill()
+        log.close()
+
+
 def test_probe_skips_used_socket(base_dir: str) -> None:
     print("ipc socket probing")
     base = os.path.join(base_dir, "probe", "discord-ipc")
@@ -772,7 +839,7 @@ def test_options(base_dir: str) -> None:
          "--allow-origin", "https://custom.example", "--no-process-scanning",
          "--scan-interval", "1", "--no-color"],
         stdout=log, stderr=subprocess.STDOUT,
-        env={**os.environ, "ARRPC_FAKE_PROCESSES_FILE": fake_file},
+        env={**os.environ, "ARRPCF_FAKE_PROCESSES_FILE": fake_file},
     )
     try:
         deadline = time.time() + 10
@@ -832,14 +899,15 @@ def test_cli() -> None:
     check("--detect-path reports no match", out.returncode == 1 and "no match" in out.stdout, out.stdout)
 
     out = subprocess.run([BINARY, "--scan-once"], capture_output=True, text=True,
-                         env={**os.environ, "ARRPC_FAKE_PROCESSES": "/tmp/hl2_osx|4242"})
+                         env={**os.environ, "ARRPCF_FAKE_PROCESSES": "/tmp/hl2_osx|4242"})
     check("--scan-once runs", out.returncode == 0, out.stdout + out.stderr)
 
     out = subprocess.run([BINARY, "--bogus"], capture_output=True, text=True)
     check("unknown option rejected", out.returncode == 2 and "unknown option" in out.stderr, out.stderr)
 
     out = subprocess.run([BINARY, "--version"], capture_output=True, text=True)
-    check("--version works", out.returncode == 0 and "1.0.0" in out.stdout, out.stdout)
+    check("--version works", out.returncode == 0 and "1.1.0" in out.stdout
+          and "arrpcf" in out.stdout, out.stdout)
 
 
 def main() -> int:
@@ -849,7 +917,7 @@ def main() -> int:
 
     test_cli()
 
-    base_dir = tempfile.mkdtemp(prefix="arrpc-test-")
+    base_dir = tempfile.mkdtemp(prefix="arrpcf-test-")
     server = Server(base_dir, fake_processes="/Applications/Brawlhalla.app/Contents/MacOS/Brawlhalla|12345")
     try:
         server.wait_ready()
@@ -879,6 +947,7 @@ def main() -> int:
     try:
         test_probe_skips_used_socket(base_dir)
         test_options(base_dir)
+        test_env_aliases(base_dir)
     finally:
         shutil.rmtree(base_dir, ignore_errors=True)
 

@@ -3,12 +3,12 @@
 <plist version="1.0">
 <dict>
   <key>Label</key>
-  <string>dev.arrpc.arrpc</string>
+  <string>dev.arrpcf</string>
 
-  <!-- Adjust the path if you installed elsewhere (e.g. ~/bin/arrpc). -->
+  <!-- Adjust the path if you installed elsewhere (e.g. ~/bin/arrpcf). -->
   <key>ProgramArguments</key>
   <array>
-    <string>/usr/local/bin/arrpc</string>
+    <string>/usr/local/bin/arrpcf</string>
     <string>--no-color</string>
   </array>
 
@@ -20,9 +20,9 @@
   <integer>10</integer>
 
   <key>StandardOutPath</key>
-  <string>/tmp/arrpc.log</string>
+  <string>/tmp/arrpcf.log</string>
   <key>StandardErrorPath</key>
-  <string>/tmp/arrpc.log</string>
+  <string>/tmp/arrpcf.log</string>
 
   <key>EnvironmentVariables</key>
   <dict>

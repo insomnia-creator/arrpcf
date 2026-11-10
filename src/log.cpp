@@ -13,7 +13,7 @@ struct Rgb {
   int r, g, b;
 };
 
-const Rgb kBrand{88, 101, 242};  // arRPC blurple
+const Rgb kBrand{88, 101, 242};  // Discord blurple
 
 Rgb tag_color(Tag tag) {
   switch (tag) {
@@ -48,8 +48,8 @@ std::string rgb(const Rgb &c, std::string_view msg) {
 
 std::string make_prefix(Tag tag) {
   std::string name = tag_name(tag);
-  if (name.empty()) return rgb(kBrand, "arRPC");
-  return rgb(kBrand, "arRPC") + " > " + rgb(tag_color(tag), name);
+  if (name.empty()) return rgb(kBrand, "arrpcf");
+  return rgb(kBrand, "arrpcf") + " > " + rgb(tag_color(tag), name);
 }
 
 }  // namespace

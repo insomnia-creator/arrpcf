@@ -1,10 +1,10 @@
 ---
 title: Protocol
-description: The wire formats arrpc speaks — IPC framing, WebSocket parameters, RPC commands and bridge messages.
+description: The wire formats arrpcf speaks — IPC framing, WebSocket parameters, RPC commands and bridge messages.
 permalink: /protocol/
 ---
 
-arrpc implements two of Discord's local RPC transports and one output protocol.
+arrpcf implements two of Discord's local RPC transports and one output protocol.
 Everything on this page is byte-for-byte compatible with arRPC v3.7.0 except where
 [arRPC parity]({{ '/parity/' | relative_url }}) lists an intentional difference.
 
@@ -15,9 +15,9 @@ Everything on this page is byte-for-byte compatible with arRPC v3.7.0 except whe
 | IPC | `$XDG_RUNTIME_DIR` / `$TMPDIR` / `$TMP` / `$TEMP` / `/tmp` + `discord-ipc-0` … `-9` |
 | WebSocket | `127.0.0.1:6463` … `6472`, first free port |
 
-The IPC index is chosen by probing: arrpc connects to `-N`, sends a `PING` and waits up
+The IPC index is chosen by probing: arrpcf connects to `-N`, sends a `PING` and waits up
 to one second. A connection failure or silence means the slot is free; a reply means
-somebody (Discord desktop, another arrpc) owns it and the next index is tried.
+somebody (Discord desktop, another arrpcf) owns it and the next index is tried.
 
 ## IPC framing
 
@@ -31,14 +31,14 @@ Every packet is an 8-byte header followed by a UTF-8 JSON body:
 
 | Type | Name | Direction | Body |
 | --- | --- | --- | --- |
-| `0` | `HANDSHAKE` | app → arrpc | `{"v": 1, "client_id": "…"}` |
+| `0` | `HANDSHAKE` | app → arrpcf | `{"v": 1, "client_id": "…"}` |
 | `1` | `FRAME` | both | an RPC command or response |
 | `2` | `CLOSE` | both | `{"code": 1000, "message": "…"}` |
 | `3` | `PING` | both | any JSON value, echoed back |
 | `4` | `PONG` | both | the same value |
 
 Packets are independent: a connection may coalesce or split them across reads, and
-arrpc buffers until a whole packet is available. Bodies larger than 8 MB are rejected.
+arrpcf buffers until a whole packet is available. Bodies larger than 8 MB are rejected.
 
 The first packet must be a `HANDSHAKE` with `v: 1` and a non-empty `client_id`.
 Violations close the connection with:
@@ -84,7 +84,7 @@ Immediately after a valid handshake, the client receives:
     },
     "user": {
       "id": "1045800378228281345",
-      "username": "arrpc",
+      "username": "arrpcf",
       "discriminator": "0",
       "global_name": "arRPC",
       "avatar": "cfefa4d9839fb4bdf030f91c2a13e95c",
@@ -99,7 +99,7 @@ Immediately after a valid handshake, the client receives:
 }
 ```
 
-The user is a mock account; `arrpc` is reported as the connected user, exactly as
+The user is a mock account; `arrpcf` is reported as the connected user, exactly as
 arRPC does.
 
 ## SET_ACTIVITY
@@ -211,7 +211,7 @@ Invite and template codes are considered valid when they are 2–64 characters o
 
 <div class="note">
 arRPC emits these commands to a callback that has no listener and therefore never
-replies, which makes some RPC libraries hang. arrpc always replies; this is the one
+replies, which makes some RPC libraries hang. arrpcf always replies; this is the one
 deliberate behavioural change, listed in <a href="{{ '/parity/' | relative_url }}">parity</a>.
 </div>
 

@@ -125,10 +125,12 @@ void RpcService::attach_connection(RpcConnectionPtr conn) {
   js::put(doc, config, "environment", js::str(doc, "production"));
   js::put(doc, data, "config", config);
 
-  // Mock user data using the arRPC app/bot, same as arRPC itself.
+  // Mock user data using arRPC's app/bot account. Kept byte-identical to the
+  // original so the READY packet stays protocol-compatible (verified by
+  // tools/compare_upstream.py).
   js::V *user = js::obj(doc);
   js::put(doc, user, "id", js::str(doc, "1045800378228281345"));
-  js::put(doc, user, "username", js::str(doc, "arrpc"));
+  js::put(doc, user, "username", js::str(doc, "arrpc"));  // arRPC's mock account
   js::put(doc, user, "discriminator", js::str(doc, "0"));
   js::put(doc, user, "global_name", js::str(doc, "arRPC"));
   js::put(doc, user, "avatar", js::str(doc, "cfefa4d9839fb4bdf030f91c2a13e95c"));

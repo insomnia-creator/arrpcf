@@ -68,12 +68,12 @@ int main(int argc, char **argv) {
   const ConfigStatus status = parse_config(argc, argv, &cfg, &err);
   if (status == ConfigStatus::ExitSuccess) return 0;
   if (status == ConfigStatus::Error) {
-    std::fprintf(stderr, "arrpc: %s\n", err.c_str());
+    std::fprintf(stderr, "arrpcf: %s\n", err.c_str());
     return 2;
   }
 
   logging::init(cfg.debug, cfg.color);
-  logging::line(logging::Tag::none, logging::fmt("arRPC (native) v%s - protocol compatible with arRPC v%s",
+  logging::line(logging::Tag::none, logging::fmt("arrpcf (native) v%s - protocol compatible with arRPC v%s",
                                                  kVersion, kCompatVersion));
 
   // --- detectable game database ---------------------------------------------

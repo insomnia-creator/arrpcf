@@ -49,18 +49,24 @@ std::vector<ProcessEntry> parse_spec(const std::string &spec) {
 }
 
 // Debug/test hooks:
-//   ARRPC_FAKE_PROCESSES="/path/to/Game.app/x;[path|pid];..."
-//   ARRPC_FAKE_PROCESSES_FILE=<file with one "path" or "path|pid" per line>
+//   ARRPCF_FAKE_PROCESSES="/path/to/Game.app/x;[path|pid];..."
+//   ARRPCF_FAKE_PROCESSES_FILE=<file with one "path" or "path|pid" per line>
 // The file variant is re-read on every scan, which makes detection *and* loss
 // of a game testable without launching real games.
+const char *env_or_legacy(const char *name, const char *legacy) {
+  const char *value = std::getenv(name);
+  if (value && *value) return value;
+  value = std::getenv(legacy);
+  return (value && *value) ? value : nullptr;
+}
+
 bool fake_processes_enabled() {
-  const char *inline_spec = std::getenv("ARRPC_FAKE_PROCESSES");
-  const char *file = std::getenv("ARRPC_FAKE_PROCESSES_FILE");
-  return (inline_spec && *inline_spec) || (file && *file);
+  return env_or_legacy("ARRPCF_FAKE_PROCESSES", "ARRPC_FAKE_PROCESSES") != nullptr ||
+         env_or_legacy("ARRPCF_FAKE_PROCESSES_FILE", "ARRPC_FAKE_PROCESSES_FILE") != nullptr;
 }
 
 std::vector<ProcessEntry> fake_processes() {
-  const char *file = std::getenv("ARRPC_FAKE_PROCESSES_FILE");
+  const char *file = env_or_legacy("ARRPCF_FAKE_PROCESSES_FILE", "ARRPC_FAKE_PROCESSES_FILE");
   if (file && *file) {
     std::string spec;
     if (FILE *handle = std::fopen(file, "rb")) {
@@ -76,7 +82,7 @@ std::vector<ProcessEntry> fake_processes() {
     }
     return parse_spec(spec);
   }
-  const char *env = std::getenv("ARRPC_FAKE_PROCESSES");
+  const char *env = env_or_legacy("ARRPCF_FAKE_PROCESSES", "ARRPC_FAKE_PROCESSES");
   return parse_spec(env ? env : "");
 }
 

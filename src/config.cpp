@@ -8,7 +8,7 @@
 #include <cstring>
 #include <string>
 
-const char *const kVersion = "1.0.0";
+const char *const kVersion = "1.1.0";
 const char *const kCompatVersion = "3.7.0";
 
 namespace {
@@ -23,15 +23,25 @@ bool parse_int(const std::string &text, int *out) {
   return true;
 }
 
-bool parse_env_int(const char *name, int *out) {
+// Variables use the ARRPCF_ prefix; arRPC's ARRPC_ names are still honoured so
+// existing setups and upstream tooling keep working.
+const char *env_value(const char *name, const char *legacy) {
   const char *value = std::getenv(name);
-  if (!value || !*value) return false;
+  if (value && *value) return value;
+  value = std::getenv(legacy);
+  if (value && *value) return value;
+  return nullptr;
+}
+
+bool parse_env_int(const char *name, const char *legacy, int *out) {
+  const char *value = env_value(name, legacy);
+  if (!value) return false;
   return parse_int(value, out);
 }
 
-bool env_truthy(const char *name) {
-  const char *value = std::getenv(name);
-  if (!value || !*value) return false;
+bool env_truthy(const char *name, const char *legacy) {
+  const char *value = env_value(name, legacy);
+  if (!value) return false;
   std::string v(value);
   for (auto &c : v) c = static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
   return !(v == "0" || v == "false" || v == "no" || v == "off");
@@ -41,13 +51,13 @@ bool env_truthy(const char *name) {
 
 void print_help() {
   std::printf(
-      "arRPC (C++) %s - native reimplementation of https://github.com/OpenAsar/arrpc\n"
-      "(protocol compatible with arRPC v%s)\n"
+      "arrpcf %s - native arRPC-compatible Discord RPC server for macOS\n"
+      "(protocol compatible with arRPC v%s, https://github.com/insomnia-creator/arrpcf)\n"
       "\n"
       "Bridges Discord's local RPC servers (IPC socket, loopback WebSocket) to the\n"
       "arRPC bridge WebSocket consumed by Discord web / Vencord / ArmCord / Vesktop.\n"
       "\n"
-      "Usage: arrpc [options]\n"
+      "Usage: arrpcf [options]\n"
       "\n"
       "Transports\n"
       "  --ipc-base <path>        Base path for the local RPC socket\n"
@@ -58,14 +68,14 @@ void print_help() {
       "  --ws-ports <first-last>  RPC WebSocket port range (default: 6463-6472)\n"
       "  --no-ws                  Disable the RPC WebSocket transport\n"
       "  --bind <host>            Bind address for TCP listeners (default: 127.0.0.1)\n"
-      "  --bridge-port <port>     Bridge WebSocket port (default: 1337, env ARRPC_BRIDGE_PORT)\n"
+      "  --bridge-port <port>     Bridge WebSocket port (default: 1337, env ARRPCF_BRIDGE_PORT)\n"
       "  --bridge-host <host>     Bridge bind address (default: 127.0.0.1; arRPC binds 0.0.0.0)\n"
       "  --no-bridge              Disable the bridge WebSocket\n"
       "  --allow-origin <origin>  Extra allowed Origin for the RPC WebSocket (repeatable)\n"
       "  --allow-any-origin       Disable the Origin check (not recommended)\n"
       "\n"
       "Process detection (macOS)\n"
-      "  --no-process-scanning    Disable game detection (env ARRPC_NO_PROCESS_SCANNING)\n"
+      "  --no-process-scanning    Disable game detection (env ARRPCF_NO_PROCESS_SCANNING)\n"
       "  --scan-interval <secs>   Seconds between scans (default: 5)\n"
       "  --detectable <file>      Use Discord's full detectable.json instead of the builtin\n"
       "                           darwin subset (https://discord.com/api/v9/applications/detectable)\n"
@@ -76,29 +86,30 @@ void print_help() {
       "  --open-links             Open INVITE_BROWSER / GUILD_TEMPLATE_BROWSER / DEEP_LINK\n"
       "                           with the default browser (arRPC never answers these, so\n"
       "                           clients that await a reply hang; we always reply)\n"
-      "  --debug                  Verbose logging (env ARRPC_DEBUG)\n"
+      "  --debug                  Verbose logging (env ARRPCF_DEBUG)\n"
       "  --no-color               Disable ANSI colours (also honours NO_COLOR)\n"
       "  --version                Print version and exit\n"
       "  -h, --help               Show this help\n"
       "\n"
-      "Env: ARRPC_BRIDGE_PORT, ARRPC_NO_PROCESS_SCANNING, ARRPC_DEBUG\n"
+      "Env: ARRPCF_BRIDGE_PORT, ARRPCF_NO_PROCESS_SCANNING, ARRPCF_DEBUG\n"
+      "     (arRPC's ARRPC_* names are still accepted as aliases)\n"
       "\n"
       "Running without the Discord desktop app is the normal setup for Discord web:\n"
-      "if Discord desktop owns discord-ipc-0, arrpc takes the next free index and\n"
+      "if Discord desktop owns discord-ipc-0, arrpcf takes the next free index and\n"
       "desktop-style RPC clients will keep talking to Discord instead.\n",
       kVersion, kCompatVersion);
 }
 
 ConfigStatus parse_config(int argc, char **argv, Config *cfg, std::string *err) {
   // Environment defaults first (CLI wins).
-  if (parse_env_int("ARRPC_BRIDGE_PORT", &cfg->bridge_port)) {
+  if (parse_env_int("ARRPCF_BRIDGE_PORT", "ARRPC_BRIDGE_PORT", &cfg->bridge_port)) {
     if (cfg->bridge_port < 1 || cfg->bridge_port > 65535) {
-      *err = "ARRPC_BRIDGE_PORT is not a valid port";
+      *err = "ARRPCF_BRIDGE_PORT is not a valid port";
       return ConfigStatus::Error;
     }
   }
-  if (env_truthy("ARRPC_NO_PROCESS_SCANNING")) cfg->process_scan = false;
-  if (env_truthy("ARRPC_DEBUG")) cfg->debug = true;
+  if (env_truthy("ARRPCF_NO_PROCESS_SCANNING", "ARRPC_NO_PROCESS_SCANNING")) cfg->process_scan = false;
+  if (env_truthy("ARRPCF_DEBUG", "ARRPC_DEBUG")) cfg->debug = true;
   if (std::getenv("NO_COLOR")) cfg->color = false;
 
   for (int i = 1; i < argc; i++) {
@@ -130,7 +141,7 @@ ConfigStatus parse_config(int argc, char **argv, Config *cfg, std::string *err) 
       return ConfigStatus::ExitSuccess;
     }
     if (arg == "--version") {
-      std::printf("arrpc (C++) %s (protocol compatible with arRPC v%s)\n", kVersion, kCompatVersion);
+      std::printf("arrpcf %s (protocol compatible with arRPC v%s)\n", kVersion, kCompatVersion);
       return ConfigStatus::ExitSuccess;
     }
     if (arg == "--no-ipc") {

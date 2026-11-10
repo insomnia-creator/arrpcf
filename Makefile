@@ -13,7 +13,7 @@ build:
 	cmake --build $(BUILD) -j
 
 test: build
-	python3 tools/test_server.py $(BUILD)/arrpc
+	python3 tools/test_server.py $(BUILD)/arrpcf
 
 asan:
 	cmake -B build-asan -DCMAKE_BUILD_TYPE=Debug \
@@ -21,10 +21,10 @@ asan:
 		-DCMAKE_C_FLAGS="-fsanitize=address,undefined -g" \
 		-DCMAKE_EXE_LINKER_FLAGS="-fsanitize=address,undefined"
 	cmake --build build-asan -j
-	python3 tools/test_server.py build-asan/arrpc
+	python3 tools/test_server.py build-asan/arrpcf
 
 compare: build
-	python3 tools/compare_upstream.py $(UPSTREAM) $(BUILD)/arrpc
+	python3 tools/compare_upstream.py $(UPSTREAM) $(BUILD)/arrpcf
 
 install: build
 	cmake --install $(BUILD) --prefix $(PREFIX)

@@ -1,6 +1,6 @@
 ---
 title: Install
-description: Build, install and run arrpc on macOS, including a launchd service.
+description: Build, install and run arrpcf on macOS, including a launchd service.
 permalink: /install/
 ---
 
@@ -17,17 +17,17 @@ There are no third-party libraries. The JSON parser
 ## Build
 
 ```sh
-git clone https://github.com/insomnia-creator/arrpc.git
-cd arrpc
+git clone https://github.com/insomnia-creator/arrpcf.git
+cd arrpcf
 cmake -B build -DCMAKE_BUILD_TYPE=Release
 cmake --build build -j
 ```
 
-The result is `build/arrpc` — a single Mach-O executable of about 316 KB that links
+The result is `build/arrpcf` — a single Mach-O executable of about 316 KB that links
 only `libSystem` and `libc++`:
 
 ```sh
-$ otool -L build/arrpc
+$ otool -L build/arrpcf
 /usr/lib/libSystem.B.dylib
 /usr/lib/libc++.1.dylib
 ```
@@ -39,22 +39,22 @@ $ otool -L build/arrpc
 ```sh
 cmake -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64"
 cmake --build build -j
-file build/arrpc      # Mach-O universal binary with 2 architectures
+file build/arrpcf      # Mach-O universal binary with 2 architectures
 ```
 
 ## Run
 
 ```sh
-./build/arrpc
+./build/arrpcf
 ```
 
 ```
-[arRPC] arRPC (native) v1.0.0 - protocol compatible with arRPC v3.7.0
-[arRPC > bridge] listening on 1337
-[arRPC > ipc] listening at /var/folders/…/T/discord-ipc-0
-[arRPC > websocket] listening on 6463
-[arRPC > process] started
-[arRPC] ready
+[arrpcf] arrpcf (native) v1.1.0 - protocol compatible with arRPC v3.7.0
+[arrpcf > bridge] listening on 1337
+[arrpcf > ipc] listening at /var/folders/…/T/discord-ipc-0
+[arrpcf > websocket] listening on 6463
+[arrpcf > process] started
+[arrpcf] ready
 ```
 
 Enable a bridge consumer in Discord web:
@@ -70,67 +70,67 @@ Then start an RPC application and watch the log (add `--debug` for frames).
 ## Install system-wide
 
 ```sh
-sudo cmake --install build --prefix /usr/local   # → /usr/local/bin/arrpc
+sudo cmake --install build --prefix /usr/local   # → /usr/local/bin/arrpcf
 ```
 
 or simply copy the binary:
 
 ```sh
-install -m 0755 build/arrpc /usr/local/bin/arrpc
+install -m 0755 build/arrpcf /usr/local/bin/arrpcf
 ```
 
 ## Run as a login service
 
 A LaunchAgent template lives in
-[`scripts/dev.arrpc.arrpc.plist`](https://github.com/insomnia-creator/arrpc/blob/main/scripts/dev.arrpc.arrpc.plist).
-Adjust `ProgramArguments` if the binary is not at `/usr/local/bin/arrpc`, then:
+[`scripts/dev.arrpcf.plist`](https://github.com/insomnia-creator/arrpcf/blob/main/scripts/dev.arrpcf.plist).
+Adjust `ProgramArguments` if the binary is not at `/usr/local/bin/arrpcf`, then:
 
 ```sh
-cp scripts/dev.arrpc.arrpc.plist ~/Library/LaunchAgents/
-launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/dev.arrpc.arrpc.plist
+cp scripts/dev.arrpcf.plist ~/Library/LaunchAgents/
+launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/dev.arrpcf.plist
 ```
 
 Check it and follow the log:
 
 ```sh
-launchctl print gui/$(id -u)/dev.arrpc.arrpc | head -20
-tail -f /tmp/arrpc.log
+launchctl print gui/$(id -u)/dev.arrpcf | head -20
+tail -f /tmp/arrpcf.log
 ```
 
 Stop or remove it:
 
 ```sh
-launchctl bootout gui/$(id -u)/dev.arrpc.arrpc
-rm ~/Library/LaunchAgents/dev.arrpc.arrpc.plist
+launchctl bootout gui/$(id -u)/dev.arrpcf
+rm ~/Library/LaunchAgents/dev.arrpcf.plist
 ```
 
 <div class="note">
 LaunchAgents inherit the per-user <code>TMPDIR</code>, which is where Discord's IPC
-socket lives (<code>$TMPDIR/discord-ipc-0</code>). That is why arrpc should run as a
+socket lives (<code>$TMPDIR/discord-ipc-0</code>). That is why arrpcf should run as a
 user agent and not as a root LaunchDaemon.
 </div>
 
 ## Verify the install
 
 ```sh
-arrpc --version          # arrpc (C++) 1.0.0 (protocol compatible with arRPC v3.7.0)
-arrpc --detect-path "/Applications/Brawlhalla.app/Contents/MacOS/Brawlhalla"
-arrpc --scan-once        # what game detection sees right now
+arrpcf --version          # arrpcf 1.1.0 (protocol compatible with arRPC v3.7.0)
+arrpcf --detect-path "/Applications/Brawlhalla.app/Contents/MacOS/Brawlhalla"
+arrpcf --scan-once        # what game detection sees right now
 ```
 
 Run the protocol test suite against the built binary:
 
 ```sh
-python3 tools/test_server.py build/arrpc
+python3 tools/test_server.py build/arrpcf
 ```
 
 ## Uninstall
 
 ```sh
-sudo rm /usr/local/bin/arrpc
-launchctl bootout gui/$(id -u)/dev.arrpc.arrpc 2>/dev/null
-rm -f ~/Library/LaunchAgents/dev.arrpc.arrpc.plist /tmp/arrpc.log
+sudo rm /usr/local/bin/arrpcf
+launchctl bootout gui/$(id -u)/dev.arrpcf 2>/dev/null
+rm -f ~/Library/LaunchAgents/dev.arrpcf.plist /tmp/arrpcf.log
 ```
 
-arrpc creates nothing else on disk: no caches, no config files, no preferences. The
+arrpcf creates nothing else on disk: no caches, no config files, no preferences. The
 IPC socket file is removed on shutdown.
