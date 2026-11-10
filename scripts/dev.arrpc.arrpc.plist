@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>dev.arrpc.arrpc</string>
+
+  <!-- Adjust the path if you installed elsewhere (e.g. ~/bin/arrpc). -->
+  <key>ProgramArguments</key>
+  <array>
+    <string>/usr/local/bin/arrpc</string>
+    <string>--no-color</string>
+  </array>
+
+  <key>RunAtLoad</key>
+  <true/>
+  <key>KeepAlive</key>
+  <true/>
+  <key>ThrottleInterval</key>
+  <integer>10</integer>
+
+  <key>StandardOutPath</key>
+  <string>/tmp/arrpc.log</string>
+  <key>StandardErrorPath</key>
+  <string>/tmp/arrpc.log</string>
+
+  <key>EnvironmentVariables</key>
+  <dict>
+    <key>NO_COLOR</key>
+    <string>1</string>
+  </dict>
+
+  <!-- Nice-to-have on modern macOS: run as an interactive background agent. -->
+  <key>ProcessType</key>
+  <string>Interactive</string>
+</dict>
+</plist>
