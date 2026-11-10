@@ -1,0 +1,50 @@
+title: arrpc
+tagline: Native Discord local RPC servers for macOS
+description: >-
+  A small C++ reimplementation of arRPC for macOS. Speaks Discord's local RPC
+  protocols and republishes activity on the arRPC bridge WebSocket used by
+  Discord web, Vencord, ArmCord and Vesktop.
+url: https://insomnia-creator.github.io
+baseurl: /arrpc
+repository: insomnia-creator/arrpc
+
+markdown: kramdown
+kramdown:
+  input: GFM
+  auto_ids: true
+  hard_wrap: false
+  syntax_highlighter: rouge
+
+exclude:
+  - README.md
+  - Gemfile
+  - Gemfile.lock
+
+defaults:
+  - scope:
+      path: ""
+    values:
+      layout: default
+
+nav:
+  - section: Getting started
+  - title: Overview
+    url: /
+  - title: Install
+    url: /install/
+  - title: Options
+    url: /options/
+  - section: Under the hood
+  - title: How it works
+    url: /how-it-works/
+  - title: Protocol
+    url: /protocol/
+  - title: Game detection
+    url: /games/
+  - section: Reference
+  - title: arRPC parity
+    url: /parity/
+  - title: Testing
+    url: /testing/
+  - title: Troubleshooting
+    url: /troubleshooting/
