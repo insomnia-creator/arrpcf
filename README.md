@@ -1,5 +1,7 @@
 # arrpc (native)
 
+[![CI](https://github.com/insomnia-creator/arrpc/actions/workflows/ci.yml/badge.svg)](https://github.com/insomnia-creator/arrpc/actions/workflows/ci.yml) [![docs](https://img.shields.io/badge/docs-insomnia--creator.github.io%2Farrpc-5865f2)](https://insomnia-creator.github.io/arrpc/)
+
 A small, dependency-free **C++17** reimplementation of
 [OpenAsar/arRPC](https://github.com/OpenAsar/arrpc) for **macOS**.
 
