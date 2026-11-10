@@ -255,7 +255,7 @@ Pages at <https://insomnia-creator.github.io/arrpc/>. Preview it locally with th
 Jekyll version GitHub uses:
 
 ```sh
-gem install jekyll -v 3.9.5 kramdown-parser-gfm --no-document
+gem install 'jekyll:3.9.5' kramdown-parser-gfm --no-document
 jekyll build --source docs --destination _site
 python3 tools/check_links.py _site /arrpc      # verifies links and anchors
 ```

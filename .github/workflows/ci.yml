@@ -43,7 +43,7 @@ jobs:
 
       - name: Build site
         run: |
-          gem install jekyll -v 3.9.5 kramdown-parser-gfm --no-document
+          gem install 'jekyll:3.9.5' kramdown-parser-gfm --no-document
           jekyll build --source docs --destination _site
 
       - name: Check links and anchors
