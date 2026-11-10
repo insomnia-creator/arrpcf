@@ -2,8 +2,9 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+  <!-- LaunchAgent label, also used as the project's bundle identifier. -->
   <key>Label</key>
-  <string>dev.arrpcf</string>
+  <string>com.insomnia-creator.arrpcf</string>
 
   <!-- Adjust the path if you installed elsewhere (e.g. ~/bin/arrpcf). -->
   <key>ProgramArguments</key>

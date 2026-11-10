@@ -82,26 +82,27 @@ install -m 0755 build/arrpcf /usr/local/bin/arrpcf
 ## Run as a login service
 
 A LaunchAgent template lives in
-[`scripts/dev.arrpcf.plist`](https://github.com/insomnia-creator/arrpcf/blob/main/scripts/dev.arrpcf.plist).
+[`scripts/com.insomnia-creator.arrpcf.plist`](https://github.com/insomnia-creator/arrpcf/blob/main/scripts/com.insomnia-creator.arrpcf.plist).
+Its label — the project's bundle identifier — is `com.insomnia-creator.arrpcf`.
 Adjust `ProgramArguments` if the binary is not at `/usr/local/bin/arrpcf`, then:
 
 ```sh
-cp scripts/dev.arrpcf.plist ~/Library/LaunchAgents/
-launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/dev.arrpcf.plist
+cp scripts/com.insomnia-creator.arrpcf.plist ~/Library/LaunchAgents/
+launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/com.insomnia-creator.arrpcf.plist
 ```
 
 Check it and follow the log:
 
 ```sh
-launchctl print gui/$(id -u)/dev.arrpcf | head -20
+launchctl print gui/$(id -u)/com.insomnia-creator.arrpcf | head -20
 tail -f /tmp/arrpcf.log
 ```
 
 Stop or remove it:
 
 ```sh
-launchctl bootout gui/$(id -u)/dev.arrpcf
-rm ~/Library/LaunchAgents/dev.arrpcf.plist
+launchctl bootout gui/$(id -u)/com.insomnia-creator.arrpcf
+rm ~/Library/LaunchAgents/com.insomnia-creator.arrpcf.plist
 ```
 
 <div class="note">
@@ -128,8 +129,8 @@ python3 tools/test_server.py build/arrpcf
 
 ```sh
 sudo rm /usr/local/bin/arrpcf
-launchctl bootout gui/$(id -u)/dev.arrpcf 2>/dev/null
-rm -f ~/Library/LaunchAgents/dev.arrpcf.plist /tmp/arrpcf.log
+launchctl bootout gui/$(id -u)/com.insomnia-creator.arrpcf 2>/dev/null
+rm -f ~/Library/LaunchAgents/com.insomnia-creator.arrpcf.plist /tmp/arrpcf.log
 ```
 
 arrpcf creates nothing else on disk: no caches, no config files, no preferences. The

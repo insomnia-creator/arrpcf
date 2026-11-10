@@ -64,14 +64,16 @@ and start any RPC-capable application (VS Code, Spotify, an MP game, …).
 
 ```sh
 sudo cmake --install build --prefix /usr/local     # installs /usr/local/bin/arrpcf
-cp scripts/dev.arrpcf.plist ~/Library/LaunchAgents/
-launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/dev.arrpcf.plist
-launchctl print    gui/$(id -u)/dev.arrpcf     # status
+cp scripts/com.insomnia-creator.arrpcf.plist ~/Library/LaunchAgents/
+launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/com.insomnia-creator.arrpcf.plist
+launchctl print    gui/$(id -u)/com.insomnia-creator.arrpcf     # status
 tail -f /tmp/arrpcf.log                              # logs
 ```
 
-launchd agents inherit the per-user `TMPDIR`, which is exactly where Discord's
-IPC socket lives (`$TMPDIR/discord-ipc-0`), so no configuration is needed.
+The LaunchAgent's label — the project's bundle identifier — is
+`com.insomnia-creator.arrpcf`. launchd agents inherit the per-user `TMPDIR`, which
+is exactly where Discord's IPC socket lives (`$TMPDIR/discord-ipc-0`), so no
+configuration is needed.
 
 ---
 
