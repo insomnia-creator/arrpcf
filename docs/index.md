@@ -36,7 +36,7 @@ arrpcf provides them:
             │                         │
             ▼                         ▼
   $TMPDIR/discord-ipc-N   ws://127.0.0.1:6463-6472
-┌─ arrpcf ────────────────────────────────────────────────┐
+┌─ arrpcf ───────────────────────────────────────────────┐
 │ IPC transport · WebSocket transport · macOS game scan  │
 │ SET_ACTIVITY  →  LOCAL_ACTIVITY_UPDATE shape           │
 └─────────────────────────┬──────────────────────────────┘
