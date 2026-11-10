@@ -1,0 +1,50 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  macos:
+    name: Build and protocol tests
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure
+        run: cmake -B build -DCMAKE_BUILD_TYPE=Release
+
+      - name: Build
+        run: cmake --build build --parallel 4
+
+      - name: Smoke test
+        run: |
+          ./build/arrpc --version
+          ./build/arrpc --detect-path "/Applications/Brawlhalla.app/Contents/MacOS/Brawlhalla"
+          ./build/arrpc --scan-once
+
+      - name: Protocol tests
+        run: python3 tools/test_server.py build/arrpc
+
+  docs:
+    name: Documentation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.2"
+
+      - name: Build site
+        run: |
+          gem install jekyll -v 3.9.5 kramdown-parser-gfm --no-document
+          jekyll build --source docs --destination _site
+
+      - name: Check links and anchors
+        run: python3 tools/check_links.py _site /arrpc
