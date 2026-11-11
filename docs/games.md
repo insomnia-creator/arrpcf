@@ -126,6 +126,34 @@ ARRPCF_FAKE_PROCESSES_FILE=/tmp/fake.txt arrpcf --scan-interval 1
 : > /tmp/fake.txt     # next scan publishes an activity: null
 ```
 
+## Games Discord only lists for Windows
+
+Some titles run on macOS but only ship a Windows executable in Discord's database,
+so no process can match. LÖVE-based games are the usual case: Balatro runs the
+engine binary `love` inside `Balatro.app/Contents/MacOS/`, while Discord's entry is
+only `balatro/balatro.exe` for `win32`.
+
+Add the bundle name to a custom database and run with `--detectable`:
+
+```sh
+curl -o ~/detectable.json https://discord.com/api/v9/applications/detectable
+python3 - <<'PY'
+import json, os, pathlib
+path = pathlib.Path(os.path.expanduser("~/detectable.json"))
+db = json.loads(path.read_text())
+for entry in db:
+    if entry.get("name", "").lower() == "balatro":
+        entry.setdefault("executables", []).append({"name": "balatro.app", "os": "darwin"})
+path.write_text(json.dumps(db, separators=(",", ":")))
+PY
+arrpcf --detectable ~/detectable.json
+```
+
+Matching `Balatro.app` rather than `love` keeps other LÖVE games from being
+identified as Balatro. To keep the override, add `--detectable <file>` to the
+LaunchAgent's `ProgramArguments`. The downloaded database is a snapshot; re-run the
+patch when Discord adds new games.
+
 ## Limits
 
 - **Permissions.** Processes started by another user are not visible; run arrpcf as the
